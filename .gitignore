@@ -1,6 +1,10 @@
 *~
 .hydra
 *.pyc
+.conda-env/
+assets.zip
+deployment/runs/
+deployment/.libero/
 datasets/
 results/
 outputs/*

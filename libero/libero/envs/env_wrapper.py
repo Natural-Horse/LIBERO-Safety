@@ -12,22 +12,29 @@ import time
 from io import BytesIO
 import cv2
 import ctypes
-from wand.api import library as wandlibrary
-from wand.image import Image as WandImage
+try:
+    from wand.api import library as wandlibrary
+    from wand.image import Image as WandImage
+except ImportError:
+    wandlibrary = None
+    WandImage = object
 from skimage.filters import gaussian
 from scipy.ndimage import zoom as scizoom
 
 # Tell Python about the C method
-wandlibrary.MagickMotionBlurImage.argtypes = (ctypes.c_void_p,  # wand
-                                              ctypes.c_double,  # radius
-                                              ctypes.c_double,  # sigma
-                                              ctypes.c_double)  # angle
+if wandlibrary is not None:
+    wandlibrary.MagickMotionBlurImage.argtypes = (ctypes.c_void_p,  # wand
+                                                  ctypes.c_double,  # radius
+                                                  ctypes.c_double,  # sigma
+                                                  ctypes.c_double)  # angle
 
 class MotionImage(WandImage):
     def motion_blur(self, radius=0.0, sigma=0.0, angle=0.0):
         wandlibrary.MagickMotionBlurImage(self.wand, radius, sigma, angle)
 
 def motion_blur(x, severity=1):
+    if wandlibrary is None:
+        raise RuntimeError("Motion blur requires the ImageMagick MagickWand library")
     c = [
         (1, 0.5), (1, 1), (2, 1), (2, 1.5), (3, 1.5),
         (3, 2), (4, 2), (4, 2.5), (5, 2.5), (6, 3)
@@ -285,8 +292,6 @@ class ControlEnv:
                 success = True
             except RandomizationError:
                 pass
-            finally:
-                continue
         # import pdb; pdb.set_trace()
         if len(self.env.noise) != 0:
             if "agentview_image" in obs:

@@ -64,10 +64,12 @@ def main():
 
     bddl_file_name = f["data"].attrs["bddl_file_name"]
 
-    bddl_file_dir = os.path.dirname(bddl_file_name)
-    replace_bddl_prefix = "/".join(bddl_file_dir.split("bddl_files/")[:-1] + "bddl_files")
-
-    hdf5_path = os.path.join(get_libero_path("datasets"), bddl_file_dir.split("bddl_files/")[-1].replace(".bddl", "_demo.hdf5"))
+    bddl_file_path = Path(bddl_file_name)
+    relative_bddl_path = bddl_file_path.relative_to(get_libero_path("bddl_files"))
+    hdf5_path = os.path.join(
+        get_libero_path("datasets"),
+        str(relative_bddl_path.with_name(f"{bddl_file_path.stem}_demo.hdf5")),
+    )
 
     output_parent_dir = Path(hdf5_path).parent
     output_parent_dir.mkdir(parents=True, exist_ok=True)

@@ -103,7 +103,7 @@ def collect_human_trajectory(
 
 
 def gather_demonstrations_as_hdf5(
-    directory, out_dir, env_info, args, remove_directory=[]
+    directory, out_dir, env_info, args, problem_info, remove_directory=None
 ):
     """
     Gathers the demonstrations saved in @directory into a
@@ -140,6 +140,9 @@ def gather_demonstrations_as_hdf5(
 
     num_eps = 0
     env_name = None  # will get populated at some point
+
+    if remove_directory is None:
+        remove_directory = []
 
     for ep_directory in os.listdir(directory):
         # print(ep_directory)
@@ -189,7 +192,8 @@ def gather_demonstrations_as_hdf5(
 
     grp.attrs["problem_info"] = json.dumps(problem_info)
     grp.attrs["bddl_file_name"] = args.bddl_file
-    grp.attrs["bddl_file_content"] = str(open(args.bddl_file, "r", encoding="utf-8"))
+    with open(args.bddl_file, "r", encoding="utf-8") as bddl_file:
+        grp.attrs["bddl_file_content"] = bddl_file.read()
 
     f.close()
 
@@ -351,7 +355,7 @@ if __name__ == "__main__":
         if saving:
             print(remove_directory)
             gather_demonstrations_as_hdf5(
-                tmp_directory, new_dir, env_info, args, remove_directory
+                tmp_directory, new_dir, env_info, args, problem_info, remove_directory
             )
             i += 1
 
